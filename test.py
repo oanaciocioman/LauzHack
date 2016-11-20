@@ -1,13 +1,13 @@
+import os
 from time import sleep
-
 import midi
 import pygame
 import pygame.midi
-import _tkinter
 from threading import Thread
 
+import subprocess
 
-pattern = midi.read_midifile('jinglebells.mid')
+pattern = midi.read_midifile('feliznavidad.mid')
 
 class Voice(Thread):
     def __init__(self, syllables, pitches, rates):
@@ -17,10 +17,25 @@ class Voice(Thread):
         self.rates = rates
 
     def run(self):
+        sleep(5)
         for i in range(len(self.syllables)):
-            print "X"
-            #subprocess.call(["spd-say", syllables[i], "-p " + str(pitches[i]) + " -r " + str(rates[i])])
+            file = open(str(i) + "file.txt", "w+")
+            file.write(syllables[i])
+            if i + 1 < len(self.syllables) and syllables[i + 1] == ' ':
+                file.write(syllables[i])
+                i += 1
+            file.close()
+            os.system("espeak.exe" + " -f " + str(i) + "file.txt" + " -p " + str(pitches[i]) + " -s " + str(260) + " -w " + str(i) + ".wav")
+            os.remove(str(i) + "file.txt")
+            sleep(0.00000001 * len(syllables[i]))
+        """
+        sound1 = AudioSegment.from_file("/0.wav")
+        sound2 = AudioSegment.from_file("/1.wav")
 
+        combined = sound1.overlay(sound2)
+
+        combined.export("/path/to/combined.wav", format='wav')
+     """
 
 class Music(Thread):
 
@@ -29,9 +44,8 @@ class Music(Thread):
 
     def run(self):
         pygame.mixer.init()
-        clock = pygame.time.Clock()
         try:
-            pygame.mixer.music.load('jinglebells.mid')
+            pygame.mixer.music.load('feliznavidad.mid')
             print "Music file %s loaded!" % pattern
         except pygame.error:
             print "File %s not found! (%s)" % (pattern, pygame.get_error())
@@ -48,12 +62,17 @@ for track in pattern:
             pitches.append(event.get_pitch())
             rates.append(event.get_velocity())
 
-syllables = ['we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'we', ' ', "don'", ' ', 'tawk', ' ', 'anymor', ' ',
-             'we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'lahyk', ' ', 'we', ' ', 'use', ' ', 'to', ' ', 'do',
-             ' ', 'we', ' ', "don'", ' ', 'lov', ' ', 'anymor', ' ', 'wha', ' ', 'was', ' ', 'all', ' ', 'of', ' ',
-             'it', ' ', 'for', ' ', 'oh,', ' ', 'we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'lahyk', ' ', 'we',
-             ' ', 'use', ' ', 'to', ' ', 'do', ' ']
+syllables = ['jing', 'gull']
 
+"""
+syllables = ['jing', 'gull', ' ', 'belz', ' ', 'jing', 'gull', ' ', 'belz', ' ', 'jing', 'gull', ' ', 'awl', ' ',
+             'thuh', ' ', 'wey', ' ', 'oh', ' ', 'wha', ' ', 'fuhn', ' ', 'it', ' ', 'iz', ' ', 't', ' ', 'rahyd',
+             ' ', 'in', ' ', 'A', ' ', 'won', ' ', 'hawrs', ' ', 'oh', 'pun', ' ', 'sley', ' ', 'oh', ' ', 'thuh',
+             ' ', 'weh', 'ther', ' ', 'outsid', ' ', 'iz', ' ', 'frahyt', 'full', ' ', 'bu', ' ', 'thuh', ' ', 'fah',
+             'yer', ' ', 'iz', ' ', 'soh', ' ', 'dih', 'lite', 'full', ' ', 'an', ' ', 'sins', ' ', 'we', 'v', ' ',
+             'noh', ' ', 'pleys', ' ', 't', ' ', 'goh', ' ', 'let', ' ', 'it', ' ', 'snoh', ' ']
+
+"""
 
 t1 = Voice(syllables, pitches, rates)
 t2 = Music()
