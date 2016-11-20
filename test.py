@@ -3,6 +3,7 @@ import time
 import midi
 import pygame
 import pygame.midi
+import daniweb
 
 from threading import Thread
 import time
@@ -46,7 +47,7 @@ class Music(Thread):
             pygame.midi.quit()
 
 
-pattern = midi.read_midifile('mozart_-_Turkish_March_in_Eb.mid')
+pattern = midi.read_midifile('ABBA_-_Money_Money_Money.mid')
 
 pitches = []
 rates = []
@@ -64,19 +65,22 @@ syllables = ['we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'we', ' ', "do
              'it', ' ', 'for', ' ', 'oh,', ' ', 'we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'lahyk', ' ', 'we',
              ' ', 'use', ' ', 'to', ' ', 'do', ' ']
 
-for i in range(len(syllables)):
-    # subprocess.call(["spd-say", syllables[i], "-p " + str(pitches[i]) + " -r " + str(rates[i])])
-    pygame.midi.init()
-    port = pygame.midi.get_default_output_id()
-    player = pygame.midi.Output(port, 0)
-    player.set_instrument(0)
-    player.note_on(pitches[i], rates[i])
-    time.sleep(0.1 * len(syllables[i]))
-    player.note_off(pitches[i], rates[i])
-    del player
-    pygame.midi.quit()
+
+daniweb.play_music('jinglebells.mid')
 
 """
+pygame.midi.init()
+port = pygame.midi.get_default_output_id()
+player = pygame.midi.Output(port, 0)
+for i in range(1000):
+    # subprocess.call(["spd-say", syllables[i], "-p " + str(pitches[i]) + " -r " + str(rates[i])])
+    # player.set_instrument(0)
+    player.note_on(pitches[i], rates[i], channel)
+    time.sleep(0.15)
+    player.note_off(pitches[i], rates[i], channel)
+del player
+pygame.midi.quit()
+
 thread_1 = Lyrics(syllables, pitches, rates)
 thread_2 = Music(syllables, pitches, rates)
 thread_1.start()
