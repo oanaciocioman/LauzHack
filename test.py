@@ -26,38 +26,24 @@ class Lyrics(Thread):
 
 
 class Music(Thread):
-    def __init__(self, syllables):
+    def __init__(self, syllables, pitches, rates):
         super(Music, self).__init__()
         self.syllables = syllables
-        pygame.midi.init()
-        self.player = pygame.midi.Output(0)
-        self.player.set_instrument(48, 1)
+        self.pitches = pitches
+        self.rates = rates
 
     def run(self):
         for i in range(len(self.syllables)):
             print "X"
+            pygame.midi.init()
+            port = pygame.midi.get_default_output_id()
+            player = pygame.midi.Output(port, 0)
+            player.set_instrument(0)
+            player.note_on(self.pitches[i], self.rates[i])
             time.sleep(0.1 * len(self.syllables[i]))
-
-    major = [0, 4, 7, 12]
-
-    def go(self, note):
-        self.player.note_on(note, 127, 1)
-        time.sleep(1)
-        self.player.note_off(note, 127, 1)
-
-    def chord(self, base, ints):
-        self.player.note_on(base, 127, 1)
-        self.player.note_on(base + ints[1], 127, 1)
-        self.player.note_on(base + ints[2], 127, 1)
-        self.player.note_on(base + ints[3], 127, 1)
-        time.sleep(1)
-        self.player.note_off(base, 127, 1)
-        self.player.note_off(base + ints[1], 127, 1)
-        self.player.note_off(base + ints[2], 127, 1)
-        self.player.note_off(base + ints[3], 127, 1)
-
-    def end(self):
-        pygame.quit()
+            player.note_off(self.pitches[i], self.rates[i])
+            del player
+            pygame.midi.quit()
 
 
 pattern = midi.read_midifile('mozart_-_Turkish_March_in_Eb.mid')
@@ -78,14 +64,26 @@ syllables = ['we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'we', ' ', "do
              'it', ' ', 'for', ' ', 'oh,', ' ', 'we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'lahyk', ' ', 'we',
              ' ', 'use', ' ', 'to', ' ', 'do', ' ']
 
+for i in range(len(syllables)):
+    # subprocess.call(["spd-say", syllables[i], "-p " + str(pitches[i]) + " -r " + str(rates[i])])
+    pygame.midi.init()
+    port = pygame.midi.get_default_output_id()
+    player = pygame.midi.Output(port, 0)
+    player.set_instrument(0)
+    player.note_on(pitches[i], rates[i])
+    time.sleep(0.1 * len(syllables[i]))
+    player.note_off(pitches[i], rates[i])
+    del player
+    pygame.midi.quit()
+
+"""
 thread_1 = Lyrics(syllables, pitches, rates)
-thread_2 = Music(syllables)
+thread_2 = Music(syllables, pitches, rates)
 thread_1.start()
 thread_2.start()
 thread_1.join()
 thread_2.join()
 
-"""
 spaces_syllabels = []
 for i in range(len(syllables)):
 	spaces_syllabels.append(syllables[i])
