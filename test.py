@@ -1,34 +1,17 @@
-import subprocess
-import time
+from time import sleep
+
 import midi
 import pygame
 import pygame.midi
-import daniweb
-
+import _tkinter
 from threading import Thread
-import time
 
 
-class Lyrics(Thread):
-    def __init__(self, syl_lyr, pitches, rates):
-        super(Lyrics, self).__init__()
-        self.syl_lyr = syl_lyr
-        self.pitches = pitches
-        self.rates = rates
+pattern = midi.read_midifile('jinglebells.mid')
 
-    def run(self):
-        syllables = self.syl_lyr
-        pitches = self.pitches
-        rates = self.rates
-        for i in range(len(syllables)):
-            # subprocess.call(["spd-say", syllables[i], "-p " + str(pitches[i]) + " -r " + str(rates[i])])
-            print "Oana e frumoasa"
-            time.sleep(0.1 * len(syllables[i]))
-
-
-class Music(Thread):
+class Voice(Thread):
     def __init__(self, syllables, pitches, rates):
-        super(Music, self).__init__()
+        super(Voice, self).__init__()
         self.syllables = syllables
         self.pitches = pitches
         self.rates = rates
@@ -36,26 +19,32 @@ class Music(Thread):
     def run(self):
         for i in range(len(self.syllables)):
             print "X"
-            pygame.midi.init()
-            port = pygame.midi.get_default_output_id()
-            player = pygame.midi.Output(port, 0)
-            player.set_instrument(0)
-            player.note_on(self.pitches[i], self.rates[i])
-            time.sleep(0.1 * len(self.syllables[i]))
-            player.note_off(self.pitches[i], self.rates[i])
-            del player
-            pygame.midi.quit()
+            #subprocess.call(["spd-say", syllables[i], "-p " + str(pitches[i]) + " -r " + str(rates[i])])
 
 
-pattern = midi.read_midifile('ABBA_-_Money_Money_Money.mid')
+class Music(Thread):
 
+    def __init__(self):
+        super(Music, self).__init__()
+
+    def run(self):
+        pygame.mixer.init()
+        clock = pygame.time.Clock()
+        try:
+            pygame.mixer.music.load('jinglebells.mid')
+            print "Music file %s loaded!" % pattern
+        except pygame.error:
+            print "File %s not found! (%s)" % (pattern, pygame.get_error())
+            return
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            sleep(1)
 pitches = []
 rates = []
 
 for track in pattern:
     for event in track:
-        if isinstance(event,
-                      midi.NoteEvent):  # check that the current event is a NoteEvent, otherwise it won't have the method get_pitch() and we'll get an error
+        if isinstance(event, midi.NoteEvent):
             pitches.append(event.get_pitch())
             rates.append(event.get_velocity())
 
@@ -66,9 +55,15 @@ syllables = ['we', ' ', "don'", ' ', 'tawk', ' ', 'anymore', ' ', 'we', ' ', "do
              ' ', 'use', ' ', 'to', ' ', 'do', ' ']
 
 
-daniweb.play_music('jinglebells.mid')
+t1 = Voice(syllables, pitches, rates)
+t2 = Music()
+t1.start()
+t2.start()
+t1.join()
+t2.join()
 
 """
+daniweb.play_music('jinglebells.mid')
 pygame.midi.init()
 port = pygame.midi.get_default_output_id()
 player = pygame.midi.Output(port, 0)
